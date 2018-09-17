@@ -1,0 +1,55 @@
+<div>
+  <mat-toolbar color="primary">
+    <span>Tag Selector</span>
+    <span class="spacer"></span>
+    <button (click)="logout()" mat-icon-button>
+      <mat-icon >exit_to_app</mat-icon>
+    </button>
+  </mat-toolbar>
+  <div class="content">
+    <div>
+      <mat-form-field>
+        <mat-select placeholder="Category" [(value)]="selectedCategory">
+          <mat-option *ngFor="let category of categories" [value]="category.id">
+            {{category.title}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-icon-button color="primary" (click)="removeCategory(selectedCategory)" [disabled]="!selectedCategory">
+        <mat-icon aria-label="Delete">delete</mat-icon>
+      </button>
+
+      <mat-form-field>
+        <input matInput placeholder="New category" #newCategoryInput autocomplete="off">
+        <button [disabled]="isEmpty(newCategoryInput.value)" mat-button  matSuffix mat-icon-button aria-label="Add" (click)="addCategory(newCategoryInput.value); newCategoryInput.value = ''">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field>
+        <input matInput placeholder="New tag" #newTagsInput autocomplete="off" [disabled]="!selectedCategory">
+        <button [disabled]="isEmpty(newTagsInput.value)" mat-button  matSuffix mat-icon-button aria-label="Add" (click)="addTags(newTagsInput.value); newTagsInput.value = ''">
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+    <div class="tag-list full-width" >
+      <app-tag *ngFor="let tag of getTags(selectedCategory)"
+               [tag]="tag"
+               (click)="selectTag(tag)"
+               [isSelected]="hasTag(tag)"
+               (remove)="removeTag(tag)"></app-tag>
+
+    </div>
+    <button mat-raised-button color="primary" cdkTrapFocus (click)="addAll(getTags(selectedCategory))" class="add-all-btn">Add all</button>
+    <div >
+      <mat-checkbox [(ngModel)]="hasComma">Comma separated</mat-checkbox>
+      <mat-checkbox [(ngModel)]="hasHashtag">Add hashtag</mat-checkbox>
+    </div>
+    <mat-form-field class="full-width">
+
+      <textarea matInput value="{{getTagsText(selectedTags, hasComma, hasHashtag)}}" placeholder="Result"></textarea>
+    </mat-form-field>
+  </div>
+</div>

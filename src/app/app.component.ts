@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import {FirebaseService} from './services/firebase.service';
+import {map} from 'rxjs/operators';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +9,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'tag-selector';
+  public isUserLogged: Observable<boolean>;
+  constructor(public readonly filrebaseService: FirebaseService){
+    this.isUserLogged = this.filrebaseService.stage().pipe(
+      map(user => !!user)
+    )
+  }
 }

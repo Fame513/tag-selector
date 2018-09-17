@@ -1,0 +1,31 @@
+.content {
+  margin: 16px;
+  box-sizing: border-box;
+}
+
+.full-width{
+  width: 100%;
+}
+
+.tag-list {
+  border: 1px solid gray;
+  padding: 8px;
+  box-sizing: border-box;
+  margin: 8px 0;
+}
+
+mat-form-field {
+  margin: 4px 8px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+mat-checkbox {
+  margin-right: 8px;
+}
+
+.add-all-btn {
+  margin: 8px 0;
+}
