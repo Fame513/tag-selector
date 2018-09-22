@@ -2,47 +2,40 @@
   <mat-toolbar color="primary">
     <span>Tag Selector</span>
     <span class="spacer"></span>
+    <mat-slide-toggle [(ngModel)]="isEditMode">Edit mode</mat-slide-toggle>
     <button (click)="logout()" mat-icon-button>
-      <mat-icon >exit_to_app</mat-icon>
+      <mat-icon>exit_to_app</mat-icon>
     </button>
   </mat-toolbar>
   <div class="content">
-    <div>
-      <mat-form-field>
-        <mat-select placeholder="Category" [(value)]="selectedCategory">
-          <mat-option *ngFor="let category of categories" [value]="category.id">
-            {{category.title}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+    <mat-form-field class="full-width">
+      <mat-chip-list #chipCategoryList>
+        <mat-chip *ngFor="let category of categories$ | async"
+                  (click)="selectedCategory$.next(category.id)"
+                  [selected]="category.id == (selectedCategory$ | async)"
+                  color="accent"
+                  [removable]="false">{{category.title}}
+          <mat-icon matChipRemove (click)="removeCategoryEvent$.next()" *ngIf="isEditMode">cancel</mat-icon>
+        </mat-chip>
+        <input placeholder="Categories" [matChipInputFor]="chipCategoryList"
+               (matChipInputTokenEnd)="addCategoryEvent$.next($event.value); $event.input.value = ''">
+      </mat-chip-list>
+    </mat-form-field>
 
-      <button mat-icon-button color="primary" (click)="removeCategory(selectedCategory)" [disabled]="!selectedCategory">
-        <mat-icon aria-label="Delete">delete</mat-icon>
-      </button>
+    <mat-form-field class="full-width">
+      <mat-chip-list #chipList [multiple]="true">
+        <mat-chip *ngFor="let tag of tags$ | async"
+                  (click)="selectTag(tag)"
+                  [removable]="false"
+                  [selected]="hasTag(tag.id)">{{tag.name}}
+          <mat-icon matChipRemove (click)="removeTag(tag)" *ngIf="isEditMode">cancel</mat-icon>
+        </mat-chip>
+        <input placeholder="Tags" [matChipInputFor]="chipList"
+               (matChipInputTokenEnd)="addTagEvent$.next($event.value); $event.input.value = ''">
+      </mat-chip-list>
+    </mat-form-field>
 
-      <mat-form-field>
-        <input matInput placeholder="New category" #newCategoryInput autocomplete="off">
-        <button [disabled]="isEmpty(newCategoryInput.value)" mat-button  matSuffix mat-icon-button aria-label="Add" (click)="addCategory(newCategoryInput.value); newCategoryInput.value = ''">
-          <mat-icon>add</mat-icon>
-        </button>
-      </mat-form-field>
-
-      <mat-form-field>
-        <input matInput placeholder="New tag" #newTagsInput autocomplete="off" [disabled]="!selectedCategory">
-        <button [disabled]="isEmpty(newTagsInput.value)" mat-button  matSuffix mat-icon-button aria-label="Add" (click)="addTags(newTagsInput.value); newTagsInput.value = ''">
-          <mat-icon>add</mat-icon>
-        </button>
-      </mat-form-field>
-    </div>
-    <div class="tag-list full-width" >
-      <app-tag *ngFor="let tag of getTags(selectedCategory)"
-               [tag]="tag"
-               (click)="selectTag(tag)"
-               [isSelected]="hasTag(tag)"
-               (remove)="removeTag(tag)"></app-tag>
-
-    </div>
-    <button mat-raised-button color="primary" cdkTrapFocus (click)="addAll(getTags(selectedCategory))" class="add-all-btn">Add all</button>
+    <button mat-raised-button color="primary" cdkTrapFocus (click)="addAllEvent$.next()" class="add-all-btn">Add all</button>
     <div >
       <mat-checkbox [(ngModel)]="hasComma">Comma separated</mat-checkbox>
       <mat-checkbox [(ngModel)]="hasHashtag">Add hashtag</mat-checkbox>

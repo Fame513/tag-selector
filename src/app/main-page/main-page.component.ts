@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {FirebaseService} from '../services/firebase.service';
 import {Category} from '../models/category';
 import {Tag} from '../models/Tag';
+import {combineLatest, Observable, Subject} from 'rxjs';
+import {first, flatMap, map, withLatestFrom} from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-page',
@@ -9,45 +11,60 @@ import {Tag} from '../models/Tag';
   styleUrls: ['./main-page.component.css']
 })
 export class MainPageComponent implements OnInit {
+  public tags$: Observable<Tag[]>;
   public selectedTags: Tag[] = [];
-  public categories: Category[] = [];
-  public selectedCategory: string;
+  public categories$: Observable<Category[]>;
+  public selectedCategory$: Subject<string> = new Subject<string>();
+  public addCategoryEvent$: Subject<string> = new Subject<string>();
+  public addTagEvent$: Subject<string> = new Subject<string>();
+  public addAllEvent$: Subject<void> = new Subject();
+  public removeCategoryEvent$: Subject<string> = new Subject<string>();
+
+  public isEditMode = false;
   public hasComma = true;
   public hasHashtag = false;
   constructor(private readonly firebaseService: FirebaseService) {
-    this.firebaseService.getCategories().subscribe(cats => {
-      this.categories = cats;
+    this.selectedCategory$.subscribe(console.log);
+    this.categories$ = this.firebaseService.getCategories();
+    this.tags$ = combineLatest(this.categories$, this.selectedCategory$).pipe(this.filterTags());
+    this.addCategoryEvent$.pipe(map(newCat => this.firebaseService.addCategory(newCat))).subscribe();
+    this.removeCategoryEvent$.pipe(
+      withLatestFrom(this.selectedCategory$, (_, category) => category),
+    ).subscribe(id => this.firebaseService.removeCategory(id));
+    this.addTagEvent$.pipe(
+      flatMap(tags => tags.split(',').map(v => v.trim()).filter(v => !!v)),
+      withLatestFrom(this.selectedCategory$),
+    ).subscribe(([id, tag]) => this.firebaseService.addTag(tag, id));
+    this.addAllEvent$.pipe(
+      withLatestFrom(this.tags$, (_, tags) => tags)
+    ).subscribe(tags => {
+      for (const tag of tags) {
+        if (!this.hasTag(tag.id)) {
+          this.selectedTags.push(tag);
+        }
+      }
     })
   }
 
   ngOnInit() {
   }
 
-  addTags(tags: string) {
-    const tagAdrray = tags.split(',').map(v => v.trim()).filter(v => !!v);
-    for (const tag of tagAdrray) {
-      this.firebaseService.addTag(this.selectedCategory, tag);
-    }
-  }
-
-  addCategory(name: string) {
-    this.firebaseService.addCategory(name);
-  }
-
-  getTags(id: string): Tag[] {
-    const category = this.categories.find(cat => cat.id === id);
-    if (!category) {
-      return [];
-    }
-    const result: Tag[] = [];
-    for(const key in category.tags) {
-      result.push({id: key, name: category.tags[key], category: id})
-    }
-    return result;
+  filterTags() {
+    return map(([categories, id]) => {
+      const  category = categories.find(cat => cat.id === id);
+      if (!category) {
+        return [];
+      }
+      const result: Tag[] = [];
+      for(const key in category.tags$) {
+        result.push({id: key, name: category.tags$[key], category: id})
+      }
+      return result;
+    });
   }
 
   selectTag(tag: Tag) {
-    if (this.hasTag(tag)) {
+    if (this.hasTag(tag.id)) {
      this.clearTag(tag.id);
     } else {
       this.selectedTags.push(tag);
@@ -62,16 +79,8 @@ export class MainPageComponent implements OnInit {
     return tags.map(tag => `${this.hasHashtag ? '#' : ''}${tag.name}`).join(hasComma ? ', ' : ' ');
   }
 
-  hasTag(tag: Tag): boolean {
-    return !!(this.selectedTags.find(t => t.id === tag.id));
-  }
-
-  addAll(tags: Tag[]) {
-    for (const tag of tags) {
-      if (!this.hasTag(tag)) {
-        this.selectedTags.push(tag);
-      }
-    }
+  hasTag(tagId: string): boolean {
+    return !!(this.selectedTags.find(t => t.id === tagId));
   }
 
   isEmpty(val: string): boolean {
@@ -81,21 +90,25 @@ export class MainPageComponent implements OnInit {
     this.firebaseService.logout();
   }
 
-  removeCategory(categoryId: string) {
-    this.clearAllCategoryTags(this.getTags(categoryId));
-    this.firebaseService.removeCategory(categoryId);
+  removeSelectedCategory() {
+    this.tags$.pipe(first()).subscribe(tags => {
+      this.clearAllCategoryTags(tags);
+    });
+    this.selectedCategory$.pipe(first()).subscribe(categoryId => {
+      this.firebaseService.removeCategory(categoryId);
+    })
   }
 
   clearAllCategoryTags(tags: Tag[]) {
     for (const tag of tags) {
-      if (this.hasTag(tag)) {
+      if (this.hasTag(tag.id)) {
         this.clearTag(tag.id);
       }
     }
   }
 
   removeTag(tag: Tag) {
-    if (this.hasTag(tag)) {
+    if (this.hasTag(tag.id)) {
       this.clearTag(tag.id);
     }
     this.firebaseService.remoseTag(tag.category, tag.id);

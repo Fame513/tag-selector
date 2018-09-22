@@ -11,7 +11,7 @@ export class Category {
     const data = snap.payload.doc.data();
     category.id = snap.payload.doc.id;
     category.title = data.name;
-    category.tags = data.tags;
+    category.tags$ = data.tags;
     return category;
   }
 

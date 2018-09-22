@@ -4,10 +4,10 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
-  MatButtonModule, MatCheckboxModule,
+  MatButtonModule, MatCheckboxModule, MatChipsModule,
   MatFormFieldModule, MatIconModule,
   MatInputModule,
-  MatSelectModule,
+  MatSelectModule, MatSlideToggleModule,
   MatToolbarModule
 } from '@angular/material';
 import { MainPageComponent } from './main-page/main-page.component';
@@ -17,15 +17,13 @@ import {AngularFireModule} from '@angular/fire';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {FirebaseService} from './services/firebase.service';
-import { TagComponent } from './tag/tag.component';
 import {FormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainPageComponent,
-    LoginPageComponent,
-    TagComponent
+    LoginPageComponent
   ],
   imports: [
     BrowserModule,
@@ -37,7 +35,9 @@ import {FormsModule} from '@angular/forms';
     MatSelectModule,
     MatInputModule,
     MatIconModule,
+    MatChipsModule,
     MatCheckboxModule,
+    MatSlideToggleModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,

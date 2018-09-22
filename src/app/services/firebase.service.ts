@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {AngularFireAuth} from '@angular/fire/auth';
-import {auth, User} from 'firebase';
+import {auth, firestore} from 'firebase/app';
 import {Observable} from 'rxjs';
 import {Category} from '../models/category';
 import {first, flatMap, map} from 'rxjs/operators';
-import * as firebase from 'firebase';
 
 @Injectable({
   providedIn: 'root'
@@ -48,7 +47,6 @@ export class FirebaseService {
 
   async addCategory(name: string) {
     const user = await this.stage().pipe(first()).toPromise();
-
     if (user) {
       return this.db.collection('users').doc(user.uid)
         .collection('categories').doc(this.db.createId())
@@ -72,7 +70,7 @@ export class FirebaseService {
     if (user) {
       return this.db.collection('users').doc(user.uid)
         .collection('categories').doc(collectionId)
-        .set({tags: {[tagId]: firebase.firestore.FieldValue.delete()}}, {merge: true})
+        .set({tags: {[tagId]: firestore.FieldValue.delete()}}, {merge: true})
     }
   }
 }
