@@ -10,12 +10,12 @@
   <div class="content">
     <mat-form-field class="full-width">
       <mat-chip-list #chipCategoryList>
-        <mat-chip *ngFor="let category of categories$ | async"
+        <mat-chip *ngFor="let category of categories$ | async; trackBy: trackByFn"
                   (click)="selectedCategory$.next(category.id)"
-                  [selected]="category.id == (selectedCategory$ | async)"
+                  [selected]="category.id === (selectedCategory$ | async)"
                   color="accent"
                   [removable]="false">{{category.title}}
-          <mat-icon matChipRemove (click)="removeCategoryEvent$.next()" *ngIf="isEditMode">cancel</mat-icon>
+          <mat-icon matChipRemove (click)="removeCategoryEvent$.next(category.id)" *ngIf="isEditMode">cancel</mat-icon>
         </mat-chip>
         <input placeholder="Categories" [matChipInputFor]="chipCategoryList"
                (matChipInputTokenEnd)="addCategoryEvent$.next($event.value); $event.input.value = ''">
@@ -35,14 +35,16 @@
       </mat-chip-list>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" cdkTrapFocus (click)="addAllEvent$.next()" class="add-all-btn">Add all</button>
+    <button mat-raised-button color="primary" (click)="addAllEvent$.next()" class="add-all-btn">Add all</button>
     <div >
       <mat-checkbox [(ngModel)]="hasComma">Comma separated</mat-checkbox>
       <mat-checkbox [(ngModel)]="hasHashtag">Add hashtag</mat-checkbox>
     </div>
     <mat-form-field class="full-width">
 
-      <textarea matInput value="{{getTagsText(selectedTags, hasComma, hasHashtag)}}" placeholder="Result"></textarea>
+      <textarea matInput value="{{getTagsText(selectedTags, hasComma, hasHashtag)}}" placeholder="Result"  #inputTarget></textarea>
+      <mat-hint>{{selectedTags.length}} tag{{selectedTags.length === 1 ? '' : 's'}}</mat-hint>
     </mat-form-field>
+    <button mat-raised-button color="primary" ngxClipboard [ngxClipboard]="inputTarget">Copy</button>
   </div>
 </div>

@@ -18,6 +18,7 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {FirebaseService} from './services/firebase.service';
 import {FormsModule} from '@angular/forms';
+import { ClipboardModule } from 'ngx-clipboard';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import {FormsModule} from '@angular/forms';
     MatChipsModule,
     MatCheckboxModule,
     MatSlideToggleModule,
+    ClipboardModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,

@@ -26,6 +26,7 @@
     "core-js": "^2.5.4",
     "firebase": "^5.4.2",
     "hammerjs": "^2.0.8",
+    "ngx-clipboard": "^11.1.7",
     "reset-css": "^4.0.1",
     "rxjs": "~6.2.0",
     "zone.js": "~0.8.26"

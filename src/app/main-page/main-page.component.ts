@@ -3,7 +3,7 @@ import {FirebaseService} from '../services/firebase.service';
 import {Category} from '../models/category';
 import {Tag} from '../models/Tag';
 import {combineLatest, Observable, Subject} from 'rxjs';
-import {first, flatMap, map, withLatestFrom} from 'rxjs/operators';
+import {first, flatMap, map, tap, withLatestFrom} from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-page',
@@ -24,13 +24,23 @@ export class MainPageComponent implements OnInit {
   public hasComma = true;
   public hasHashtag = false;
   constructor(private readonly firebaseService: FirebaseService) {
-    this.selectedCategory$.subscribe(console.log);
-    this.categories$ = this.firebaseService.getCategories();
-    this.tags$ = combineLatest(this.categories$, this.selectedCategory$).pipe(this.filterTags());
+    this.categories$ = this.firebaseService.getCategories().pipe(
+      map(cats => this.sortByString(cats, 'title'))
+    );
+    this.tags$ = combineLatest(this.categories$, this.selectedCategory$).pipe(
+      this.filterTags(),
+      map(tags => this.sortByString(tags, 'name'))
+    );
     this.addCategoryEvent$.pipe(map(newCat => this.firebaseService.addCategory(newCat))).subscribe();
+
     this.removeCategoryEvent$.pipe(
-      withLatestFrom(this.selectedCategory$, (_, category) => category),
+      withLatestFrom(this.categories$, (categoryId, categories) => categories.find(cat => cat.id === categoryId)),
+      tap(category => {
+        this.clearAllCategoryTags(category);
+      }),
+      map(cat => cat.id)
     ).subscribe(id => this.firebaseService.removeCategory(id));
+
     this.addTagEvent$.pipe(
       flatMap(tags => tags.split(',').map(v => v.trim()).filter(v => !!v)),
       withLatestFrom(this.selectedCategory$),
@@ -56,8 +66,8 @@ export class MainPageComponent implements OnInit {
         return [];
       }
       const result: Tag[] = [];
-      for(const key in category.tags$) {
-        result.push({id: key, name: category.tags$[key], category: id})
+      for(const key in category.tags) {
+        result.push({id: key, name: category.tags[key], category: id})
       }
       return result;
     });
@@ -76,7 +86,7 @@ export class MainPageComponent implements OnInit {
   }
 
   getTagsText(tags: Tag[], hasComma, hasHashtag): string {
-    return tags.map(tag => `${this.hasHashtag ? '#' : ''}${tag.name}`).join(hasComma ? ', ' : ' ');
+    return this.sortByString(tags, 'name').map(tag => `${this.hasHashtag ? '#' : ''}${tag.name}`).join(hasComma ? ', ' : ' ');
   }
 
   hasTag(tagId: string): boolean {
@@ -90,19 +100,10 @@ export class MainPageComponent implements OnInit {
     this.firebaseService.logout();
   }
 
-  removeSelectedCategory() {
-    this.tags$.pipe(first()).subscribe(tags => {
-      this.clearAllCategoryTags(tags);
-    });
-    this.selectedCategory$.pipe(first()).subscribe(categoryId => {
-      this.firebaseService.removeCategory(categoryId);
-    })
-  }
-
-  clearAllCategoryTags(tags: Tag[]) {
-    for (const tag of tags) {
-      if (this.hasTag(tag.id)) {
-        this.clearTag(tag.id);
+  clearAllCategoryTags(category: Category) {
+    for (const id in category.tags) {
+      if (this.hasTag(id)) {
+        this.clearTag(id);
       }
     }
   }
@@ -112,5 +113,23 @@ export class MainPageComponent implements OnInit {
       this.clearTag(tag.id);
     }
     this.firebaseService.remoseTag(tag.category, tag.id);
+  }
+
+  trackByFn(a, b) {
+    return a.id === b.id;
+  }
+
+  sortByString(arr: any[], row: string) {
+    return arr.sort((a, b) => {
+      const al = a[row].toLowerCase();
+      const bl = b[row].toLowerCase();
+      if(al > bl) {
+       return 1;
+      } else if (al < bl) {
+       return -1;
+      } else {
+       return 0;
+      }
+    })
   }
 }
