@@ -7,6 +7,10 @@
   width: 100%;
 }
 
+button {
+  margin-right: 8px;
+}
+
 .tag-list {
   border: 1px solid gray;
   padding: 8px;

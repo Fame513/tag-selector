@@ -132,4 +132,8 @@ export class MainPageComponent implements OnInit {
       }
     })
   }
+
+  clearAll() {
+    this.selectedTags = [];
+  }
 }
