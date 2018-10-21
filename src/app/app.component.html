@@ -1,4 +1,7 @@
 <app-main-page *ngIf="isUserLogged | async; else loginBlock"></app-main-page>
 <ng-template #loginBlock>
-  <app-login-page></app-login-page>
+  <app-login-page *ngIf="hasStatus; else loadingBlock"></app-login-page>
+  <ng-template #loadingBlock>
+    <app-loading></app-loading>
+  </ng-template>
 </ng-template>

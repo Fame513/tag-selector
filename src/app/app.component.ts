@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {FirebaseService} from './services/firebase.service';
-import {map} from 'rxjs/operators';
+import {map, tap} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 
 @Component({
@@ -10,8 +10,10 @@ import {Observable} from 'rxjs';
 })
 export class AppComponent {
   public isUserLogged: Observable<boolean>;
+  public hasStatus = false;
   constructor(public readonly filrebaseService: FirebaseService){
     this.isUserLogged = this.filrebaseService.stage().pipe(
+      tap(() => this.hasStatus = true),
       map(user => !!user)
     )
   }

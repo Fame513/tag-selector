@@ -19,12 +19,14 @@ export class MainPageComponent implements OnInit {
   public addTagEvent$: Subject<string> = new Subject<string>();
   public addAllEvent$: Subject<void> = new Subject();
   public removeCategoryEvent$: Subject<string> = new Subject<string>();
+  public isLoading = true;
 
   public isEditMode = false;
   public hasComma = true;
   public hasHashtag = false;
   constructor(private readonly firebaseService: FirebaseService) {
     this.categories$ = this.firebaseService.getCategories().pipe(
+      tap(() => this.isLoading = false),
       map(cats => this.sortByString(cats, 'title'))
     );
     this.tags$ = combineLatest(this.categories$, this.selectedCategory$).pipe(

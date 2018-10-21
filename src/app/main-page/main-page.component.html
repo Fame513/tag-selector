@@ -7,6 +7,7 @@
       <mat-icon>exit_to_app</mat-icon>
     </button>
   </mat-toolbar>
+  <mat-progress-bar mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
   <div class="content">
     <mat-form-field class="full-width">
       <mat-chip-list #chipCategoryList>
