@@ -45,12 +45,14 @@ export class FirebaseService {
     }
   }
 
-  async addCategory(name: string) {
+  async addCategory(name: string): Promise<string> {
     const user = await this.stage().pipe(first()).toPromise();
     if (user) {
+      const id = this.db.createId()
       return this.db.collection('users').doc(user.uid)
-        .collection('categories').doc(this.db.createId())
+        .collection('categories').doc(id)
         .set({name})
+        .then(() => id);
     }
   }
 

@@ -28,7 +28,7 @@
         <mat-chip *ngFor="let tag of tags$ | async"
                   (click)="selectTag(tag)"
                   [removable]="false"
-                  [selected]="hasTag(tag.id)">{{tag.name}}
+                  [selected]="hasTag(tag.name)">{{tag.name}}
           <mat-icon matChipRemove (click)="removeTag(tag)" *ngIf="isEditMode">cancel</mat-icon>
         </mat-chip>
         <input placeholder="Tags" [matChipInputFor]="chipList"
@@ -47,6 +47,7 @@
       <mat-hint>{{selectedTags.length}} tag{{selectedTags.length === 1 ? '' : 's'}}</mat-hint>
     </mat-form-field>
     <button mat-raised-button color="primary" ngxClipboard [ngxClipboard]="inputTarget">Copy</button>
+    <button mat-raised-button color="primary" (click)="saveAll()">Save all</button>
     <button mat-raised-button color="primary" (click)="clearAll()">Clear all</button>
   </div>
 </div>

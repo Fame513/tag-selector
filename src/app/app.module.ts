@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
-  MatButtonModule, MatCheckboxModule, MatChipsModule,
+  MatButtonModule, MatCheckboxModule, MatChipsModule, MatDialogModule,
   MatFormFieldModule, MatIconModule,
   MatInputModule, MatProgressBarModule, MatProgressSpinnerModule,
   MatSelectModule, MatSlideToggleModule,
@@ -20,13 +20,18 @@ import {FirebaseService} from './services/firebase.service';
 import {FormsModule} from '@angular/forms';
 import { ClipboardModule } from 'ngx-clipboard';
 import { LoadingComponent } from './loading/loading.component';
+import { NameSelectorDialogComponent } from './dialog/name-selector-dialog/name-selector-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainPageComponent,
     LoginPageComponent,
-    LoadingComponent
+    LoadingComponent,
+    NameSelectorDialogComponent
+  ],
+  entryComponents: [
+    NameSelectorDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -42,6 +47,7 @@ import { LoadingComponent } from './loading/loading.component';
     MatCheckboxModule,
     MatSlideToggleModule,
     MatProgressBarModule,
+    MatDialogModule,
     ClipboardModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,

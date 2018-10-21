@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FirebaseService} from '../services/firebase.service';
 import {Category} from '../models/category';
 import {Tag} from '../models/Tag';
 import {combineLatest, Observable, Subject} from 'rxjs';
-import {first, flatMap, map, tap, withLatestFrom} from 'rxjs/operators';
+import {filter, first, flatMap, map, switchMap, tap, withLatestFrom} from 'rxjs/operators';
+import {MatDialog} from '@angular/material';
+import {NameSelectorDialogComponent} from '../dialog/name-selector-dialog/name-selector-dialog.component';
 
 @Component({
   selector: 'app-main-page',
@@ -21,10 +23,14 @@ export class MainPageComponent implements OnInit {
   public removeCategoryEvent$: Subject<string> = new Subject<string>();
   public isLoading = true;
 
+  @ViewChild('inputTarget')
+  public inputTarget: ElementRef ;
+
   public isEditMode = false;
   public hasComma = true;
   public hasHashtag = false;
-  constructor(private readonly firebaseService: FirebaseService) {
+  constructor(private readonly firebaseService: FirebaseService,
+              public dialog: MatDialog) {
     this.categories$ = this.firebaseService.getCategories().pipe(
       tap(() => this.isLoading = false),
       map(cats => this.sortByString(cats, 'title'))
@@ -76,23 +82,23 @@ export class MainPageComponent implements OnInit {
   }
 
   selectTag(tag: Tag) {
-    if (this.hasTag(tag.id)) {
-     this.clearTag(tag.id);
+    if (this.hasTag(tag.name)) {
+     this.clearTag(tag.name);
     } else {
       this.selectedTags.push(tag);
     }
   }
 
-  clearTag(tagId: string) {
-    this.selectedTags.splice(this.selectedTags.findIndex(t => t.id === tagId), 1)
+  clearTag(tagName: string) {
+    this.selectedTags.splice(this.selectedTags.findIndex(t => t.name === tagName), 1)
   }
 
   getTagsText(tags: Tag[], hasComma, hasHashtag): string {
     return this.sortByString(tags, 'name').map(tag => `${this.hasHashtag ? '#' : ''}${tag.name}`).join(hasComma ? ', ' : ' ');
   }
 
-  hasTag(tagId: string): boolean {
-    return !!(this.selectedTags.find(t => t.id === tagId));
+  hasTag(tagName: string): boolean {
+    return !!(this.selectedTags.find(t => t.name === tagName));
   }
 
   isEmpty(val: string): boolean {
@@ -104,15 +110,15 @@ export class MainPageComponent implements OnInit {
 
   clearAllCategoryTags(category: Category) {
     for (const id in category.tags) {
-      if (this.hasTag(id)) {
-        this.clearTag(id);
+      if (this.hasTag(category.tags[id])) {
+        this.clearTag(category.tags[id]);
       }
     }
   }
 
   removeTag(tag: Tag) {
-    if (this.hasTag(tag.id)) {
-      this.clearTag(tag.id);
+    if (this.hasTag(tag.name)) {
+      this.clearTag(tag.name);
     }
     this.firebaseService.remoseTag(tag.category, tag.id);
   }
@@ -137,5 +143,20 @@ export class MainPageComponent implements OnInit {
 
   clearAll() {
     this.selectedTags = [];
+  }
+
+  saveAll() {
+    this.dialog.open(NameSelectorDialogComponent)
+      .afterClosed()
+      .pipe(
+        filter(data => data && data.trim()),
+        flatMap(categoryName => this.firebaseService.addCategory(categoryName)),
+        flatMap(categoryId => {
+          return this.selectedTags
+            .map(tag => tag.name)
+            .map(tag => this.firebaseService.addTag(categoryId, tag))
+        })
+      )
+      .subscribe();
   }
 }
