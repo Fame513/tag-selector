@@ -11,8 +11,8 @@ import {Observable} from 'rxjs';
 export class AppComponent {
   public isUserLogged: Observable<boolean>;
   public hasStatus = false;
-  constructor(public readonly filrebaseService: FirebaseService){
-    this.isUserLogged = this.filrebaseService.stage().pipe(
+  constructor(public readonly firebaseService: FirebaseService){
+    this.isUserLogged = this.firebaseService.stage().pipe(
       tap(() => this.hasStatus = true),
       map(user => !!user)
     )

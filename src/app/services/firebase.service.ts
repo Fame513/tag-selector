@@ -15,7 +15,9 @@ export class FirebaseService {
   }
 
   login() {
-    return this.afAuth.auth.signInWithPopup(new auth.GoogleAuthProvider());
+    return this.afAuth.auth.signInWithPopup(new auth.GoogleAuthProvider().setCustomParameters({
+      prompt: 'select_account'
+    }));
   }
 
   logout() {

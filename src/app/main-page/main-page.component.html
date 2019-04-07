@@ -3,6 +3,7 @@
     <span>Tag Selector</span>
     <span class="spacer"></span>
     <mat-slide-toggle [(ngModel)]="isEditMode">Edit mode</mat-slide-toggle>
+    <span class="padding-left">{{userEmail$ | async}}</span>
     <button (click)="logout()" mat-icon-button>
       <mat-icon>exit_to_app</mat-icon>
     </button>
@@ -31,7 +32,7 @@
                   [selected]="hasTag(tag.name)">{{tag.name}}
           <mat-icon matChipRemove (click)="removeTag(tag)" *ngIf="isEditMode">cancel</mat-icon>
         </mat-chip>
-        <input placeholder="Tags" [matChipInputFor]="chipList"
+        <input placeholder="Tags" [matChipInputFor]="chipList" [disabled]="!(selectedCategory$ | async)"
                (matChipInputTokenEnd)="addTagEvent$.next($event.value); $event.input.value = ''">
       </mat-chip-list>
     </mat-form-field>

@@ -2,10 +2,11 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FirebaseService} from '../services/firebase.service';
 import {Category} from '../models/category';
 import {Tag} from '../models/Tag';
-import {combineLatest, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {filter, first, flatMap, map, switchMap, tap, withLatestFrom} from 'rxjs/operators';
 import {MatDialog} from '@angular/material';
 import {NameSelectorDialogComponent} from '../dialog/name-selector-dialog/name-selector-dialog.component';
+import {of} from 'rxjs/internal/observable/of';
 
 @Component({
   selector: 'app-main-page',
@@ -16,12 +17,13 @@ export class MainPageComponent implements OnInit {
   public tags$: Observable<Tag[]>;
   public selectedTags: Tag[] = [];
   public categories$: Observable<Category[]>;
-  public selectedCategory$: Subject<string> = new Subject<string>();
+  public selectedCategory$: BehaviorSubject<string> = new BehaviorSubject<string>(null);
   public addCategoryEvent$: Subject<string> = new Subject<string>();
   public addTagEvent$: Subject<string> = new Subject<string>();
   public addAllEvent$: Subject<void> = new Subject();
   public removeCategoryEvent$: Subject<string> = new Subject<string>();
   public isLoading = true;
+  public userEmail$ = of('');
 
   @ViewChild('inputTarget')
   public inputTarget: ElementRef ;
@@ -45,6 +47,9 @@ export class MainPageComponent implements OnInit {
       withLatestFrom(this.categories$, (categoryId, categories) => categories.find(cat => cat.id === categoryId)),
       tap(category => {
         this.clearAllCategoryTags(category);
+        if (category.id === this.selectedCategory$.getValue()) {
+          this.selectedCategory$.next(null);
+        }
       }),
       map(cat => cat.id)
     ).subscribe(id => this.firebaseService.removeCategory(id));
@@ -61,7 +66,11 @@ export class MainPageComponent implements OnInit {
           this.selectedTags.push(tag);
         }
       }
-    })
+    });
+
+    this.userEmail$ = this.firebaseService.stage().pipe(
+      map(state => state.email)
+    );
   }
 
   ngOnInit() {
