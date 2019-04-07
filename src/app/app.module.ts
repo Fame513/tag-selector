@@ -21,6 +21,7 @@ import {FormsModule} from '@angular/forms';
 import { ClipboardModule } from 'ngx-clipboard';
 import { LoadingComponent } from './loading/loading.component';
 import { NameSelectorDialogComponent } from './dialog/name-selector-dialog/name-selector-dialog.component';
+import { ConfirmDialogComponent } from './dialog/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -28,10 +29,12 @@ import { NameSelectorDialogComponent } from './dialog/name-selector-dialog/name-
     MainPageComponent,
     LoginPageComponent,
     LoadingComponent,
-    NameSelectorDialogComponent
+    NameSelectorDialogComponent,
+    ConfirmDialogComponent
   ],
   entryComponents: [
-    NameSelectorDialogComponent
+    NameSelectorDialogComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule,

@@ -7,6 +7,7 @@ import {filter, first, flatMap, map, switchMap, tap, withLatestFrom} from 'rxjs/
 import {MatDialog} from '@angular/material';
 import {NameSelectorDialogComponent} from '../dialog/name-selector-dialog/name-selector-dialog.component';
 import {of} from 'rxjs/internal/observable/of';
+import {ConfirmDialogComponent} from '../dialog/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-main-page',
@@ -44,6 +45,8 @@ export class MainPageComponent implements OnInit {
     this.addCategoryEvent$.pipe(map(newCat => this.firebaseService.addCategory(newCat))).subscribe();
 
     this.removeCategoryEvent$.pipe(
+      switchMap((id) => this.dialog.open(ConfirmDialogComponent, {data: {id, text: 'Do you really want to delete this category?'}}).afterClosed()),
+      filter(id => !!id),
       withLatestFrom(this.categories$, (categoryId, categories) => categories.find(cat => cat.id === categoryId)),
       tap(category => {
         this.clearAllCategoryTags(category);
@@ -58,6 +61,7 @@ export class MainPageComponent implements OnInit {
       flatMap(tags => tags.split(',').map(v => v.trim()).filter(v => !!v)),
       withLatestFrom(this.selectedCategory$),
     ).subscribe(([id, tag]) => this.firebaseService.addTag(tag, id));
+
     this.addAllEvent$.pipe(
       withLatestFrom(this.tags$, (_, tags) => tags)
     ).subscribe(tags => {
